@@ -8,7 +8,7 @@
 #include <linux-ftools.h>
 #include <math.h>
 
-struct fincore_result 
+struct fincore_result
 {
     long cached_size;
 };
@@ -38,10 +38,10 @@ void fincore(char* path, int pages, int summarize, int only_cached, struct finco
     char *errstr;
 
     int flags = O_RDWR;
-    
+
     //TODO:
     //
-    // pretty print integers with commas... 
+    // pretty print integers with commas...
 
     fd = open(path,flags);
 
@@ -61,7 +61,7 @@ void fincore(char* path, int pages, int summarize, int only_cached, struct finco
     }
 
     file_mmap = mmap((void *)0, file_stat.st_size, PROT_NONE, MAP_SHARED, fd, 0);
-    
+
     if ( file_mmap == MAP_FAILED ) {
         f_err(path, "Could not mmap file");
         return;
@@ -97,13 +97,13 @@ void fincore(char* path, int pages, int summarize, int only_cached, struct finco
     // TODO: make all these variables long and print them as ld
 
     int total_pages = (int)ceil( (double)file_stat.st_size / (double)page_size );
-    double cached_perc = 100 * (cached / (double)total_pages); 
+    double cached_perc = 100 * (cached / (double)total_pages);
 
     long cached_size = (double)cached * (double)page_size;
 
     if ( only_cached == 0 || cached > 0 ) {
-        printf( "%s %ld %d %d %ld %f\n", 
-                path, file_stat.st_size, total_pages, cached, cached_size, cached_perc );
+        printf( "%-11ld %-8.2f %-8d %-11ld %-8d %s\n",
+                cached_size, cached_perc, cached, file_stat.st_size, total_pages, path );
     }
 
     free(mincore_vec);
@@ -123,9 +123,11 @@ void help() {
     fprintf( stderr, "fincore [options] files...\n" );
     fprintf( stderr, "\n" );
 
-    fprintf( stderr, "  --pages=false      Don't print pages\n" );
+    fprintf( stderr, "  --pages            Print pages\n" );
+    fprintf( stderr, "  --no-header        Don't print header\n" );
     fprintf( stderr, "  --summarize        When comparing multiple files, print a summary report\n" );
     fprintf( stderr, "  --only-cached      Only print stats for files that are actually in cache.\n" );
+    fprintf( stderr, "  --pages=false      Don't print pages. Obsoleted - this is the default.\n" );
 
 }
 
@@ -143,16 +145,10 @@ int main(int argc, char *argv[]) {
     int fidx = 1;
 
     // parse command line options.
+    int i = 1;
 
-    //TODO options:
-    //
-    // --pages=true|false print/don't print pages
-    // --summarize when comparing multiple files, print a summary report
-    // --only-cached only print stats for files that are actually in cache.
-
-    int i = 1; 
-
-    int pages         = 1;
+    int pages         = 0;
+    int no_header     = 0;
     int summarize     = 0;
     int only_cached   = 0;
 
@@ -160,6 +156,16 @@ int main(int argc, char *argv[]) {
 
         if ( strcmp( "--pages=false" , argv[i] ) == 0 ) {
             pages = 0;
+            ++fidx;
+        }
+
+        if ( strcmp( "--pages" , argv[i] ) == 0 ) {
+            pages = 1;
+            ++fidx;
+        }
+
+        if ( strcmp( "--no-header" , argv[i] ) == 0 ) {
+            no_header = 1;
             ++fidx;
         }
 
@@ -184,7 +190,13 @@ int main(int argc, char *argv[]) {
 
     long total_cached_size = 0;
 
-    printf("filename size\ttotal pages\tcached pages\tcached size\tcached percentage\n");
+    if (!no_header) {
+        printf( "%-11s %-8s %-8s %-11s %-8s %s\n",
+                "cached", "cached", "cached",
+                "file", "file", "file");
+        printf( "%-11s %-8s %-8s %-11s %-8s %s\n",
+                "size", "percent", "pages", "size", "pages", "name" );
+    }
 
     for( ; fidx < argc; ++fidx ) {
 
@@ -197,12 +209,12 @@ int main(int argc, char *argv[]) {
         total_cached_size += result.cached_size;
 
     }
-    
+
     if ( summarize ) {
-        
+
         printf( "---\n" );
 
-        //TODO: add more metrics including total size... 
+        //TODO: add more metrics including total size...
         printf( "total cached size: %ld\n", total_cached_size );
 
     }
