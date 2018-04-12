@@ -37,7 +37,7 @@ void fincore(char* path, int pages, int summarize, int only_cached, struct finco
     size_t page_index;
     char *errstr;
 
-    int flags = O_RDWR;
+    int flags = O_RDONLY;
     
     //TODO:
     //
