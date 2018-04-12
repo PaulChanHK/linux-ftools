@@ -1,3 +1,14 @@
 Makefile
 config.log
 config.status
+.deps
+Makefile.in
+autom4te.cache
+aclocal.m4
+compile
+fadvise
+fadvise.o
+fallocate
+fallocate.o
+fincore
+fincore.o
