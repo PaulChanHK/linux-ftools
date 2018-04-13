@@ -126,8 +126,11 @@ void help() {
     fprintf( stderr, "  --pages            Print pages\n" );
     fprintf( stderr, "  --no-header        Don't print header\n" );
     fprintf( stderr, "  --summarize        When comparing multiple files, print a summary report\n" );
+    fprintf( stderr, "  --non-cached       Print also non-cached files\n" );
+    fprintf( stderr, "\n" );
+    fprintf( stderr, " Obsoleted options (default):\n" );
+    fprintf( stderr, "  --pages=false      Don't print pages.\n" );
     fprintf( stderr, "  --only-cached      Only print stats for files that are actually in cache.\n" );
-    fprintf( stderr, "  --pages=false      Don't print pages. Obsoleted - this is the default.\n" );
 
 }
 
@@ -150,7 +153,7 @@ int main(int argc, char *argv[]) {
     int pages         = 0;
     int no_header     = 0;
     int summarize     = 0;
-    int only_cached   = 0;
+    int only_cached   = 1;
 
     for( ; i < argc; ++i ) {
 
@@ -176,6 +179,11 @@ int main(int argc, char *argv[]) {
 
         if ( strcmp( "--only-cached" , argv[i] ) == 0 ) {
             only_cached = 1;
+            ++fidx;
+        }
+
+        if ( strcmp( "--non-cached" , argv[i] ) == 0 ) {
+            only_cached = 0;
             ++fidx;
         }
 
